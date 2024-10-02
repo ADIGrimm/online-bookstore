@@ -7,11 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-@EntityScan(basePackages = "online.bookstore.model")
 public class OnlineBookstoreApplication {
     @Autowired
     private BookService bookService;
@@ -34,6 +32,7 @@ public class OnlineBookstoreApplication {
             book.setCoverImage("https://m.media-amazon.com/images/I/81gTwYAhU7L.jpg");
             book.setIsbn("9780060850524");
             bookService.save(book);
+            System.out.println(bookService.findAll());
         };
     }
 }
