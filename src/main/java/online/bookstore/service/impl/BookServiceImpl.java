@@ -4,7 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import online.bookstore.dto.BookDto;
 import online.bookstore.dto.CreateBookRequestDto;
-import online.bookstore.exceptions.EntityNotFoundException;
+import online.bookstore.exception.EntityNotFoundException;
 import online.bookstore.mapper.BookMapper;
 import online.bookstore.model.Book;
 import online.bookstore.repository.BookRepository;

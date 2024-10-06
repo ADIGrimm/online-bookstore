@@ -6,7 +6,7 @@ import jakarta.persistence.EntityTransaction;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import online.bookstore.exceptions.DataProcessingException;
+import online.bookstore.exception.DataProcessingException;
 import online.bookstore.model.Book;
 import online.bookstore.repository.BookRepository;
 import org.springframework.stereotype.Repository;
@@ -45,8 +45,9 @@ public class BookRepositoryImpl implements BookRepository {
     @Override
     public Optional<Book> findById(Long id) {
         try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
-            Book book = entityManager.find(Book.class, id);
-            return book != null ? Optional.of(book) : Optional.empty();
+            return Optional.ofNullable(entityManager.find(Book.class, id));
+        } catch (Exception e) {
+            throw new DataProcessingException("Can't find book by id " + id, e);
         }
     }
 }

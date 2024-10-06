@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<mapstruct.version>1.6.2</mapstruct.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -71,12 +72,12 @@
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>1.5.5.Final</version> <!-- или ваша версия -->
+			<version>${mapstruct.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct-processor</artifactId>
-			<version>1.5.5.Final</version> <!-- или ваша версия -->
+			<version>${mapstruct.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -84,7 +85,6 @@
 			<artifactId>lombok-mapstruct-binding</artifactId>
 			<version>0.2.0</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>
