@@ -43,7 +43,6 @@ public class BookController {
         bookService.deleteById(id);
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
     public void update(@PathVariable Long id, @RequestBody CreateBookRequestDto bookDto) {
         bookService.update(id, bookDto);
