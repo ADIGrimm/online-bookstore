@@ -1,4 +1,4 @@
-package online.bookstore.validator;
+package online.bookstore.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -7,11 +7,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Constraint(validatedBy = IsbnValidator.class)
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Isbn {
-    String message() default "Wrong ISBN format";
+@Constraint(validatedBy = FieldMatchValidator.class)
+public @interface FieldMatch {
+    String message() default "Given fields do not match";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
+    String firstField();
+    String secondField();
 }
