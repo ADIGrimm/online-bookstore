@@ -27,14 +27,12 @@ public class Book {
     private String title;
     @NotNull
     private String author;
-    @NotNull
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String isbn;
     @NotNull
     private BigDecimal price;
     private String description;
     private String coverImage;
-    @NotNull
-    @Column(columnDefinition = "TINYINT(1)")
+    @Column(columnDefinition = "TINYINT(1)", nullable = false)
     private boolean isDeleted;
 }

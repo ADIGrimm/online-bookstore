@@ -22,8 +22,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
     @NotNull
     private String password;
@@ -32,7 +31,6 @@ public class User {
     @NotNull
     private String lastName;
     private String shippingAddress;
-    @NotNull
-    @Column(columnDefinition = "TINYINT(1)")
+    @Column(columnDefinition = "TINYINT(1)", nullable = false)
     private boolean isDeleted;
 }
