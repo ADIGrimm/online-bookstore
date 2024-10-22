@@ -1,11 +1,11 @@
-package online.bookstore.dto;
+package online.bookstore.dto.book;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import lombok.Data;
-import online.bookstore.validator.Isbn;
+import org.hibernate.validator.constraints.ISBN;
 
 @Data
 public class CreateBookRequestDto {
@@ -13,7 +13,7 @@ public class CreateBookRequestDto {
     private String title;
     @NotBlank
     private String author;
-    @Isbn
+    @ISBN
     @NotBlank
     private String isbn;
     @Min(0)
