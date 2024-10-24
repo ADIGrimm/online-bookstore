@@ -35,4 +35,3 @@ public class Role implements GrantedAuthority {
         ROLE_ADMIN
     }
 }
-
