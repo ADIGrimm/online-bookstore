@@ -4,6 +4,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import online.bookstore.dto.user.UserRegistrationRequestDto;
 import online.bookstore.dto.user.UserResponseDto;
+import online.bookstore.exception.EntityNotFoundException;
 import online.bookstore.exception.RegistrationException;
 import online.bookstore.mapper.UserMapper;
 import online.bookstore.model.Role;
@@ -26,10 +27,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto registration(UserRegistrationRequestDto requestDto) {
+        if (userRepository.existsByEmail(requestDto.getEmail())) {
+            throw new RegistrationException(
+                    String.format("User with this email: %s already exists", requestDto.getEmail()
+                    ));
+        }
         User user = userMapper.toModel(requestDto);
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         user.setRoles(Set.of(roleRepository.findByName(Role.RoleName.ROLE_USER)
-                .orElseThrow(() -> new RegistrationException("Can't find role"))));
+                .orElseThrow(() -> new EntityNotFoundException("Can't find role"))));
         return userMapper.toDto(userRepository.save(user));
     }
 }
