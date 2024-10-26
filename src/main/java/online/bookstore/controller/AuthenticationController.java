@@ -2,8 +2,11 @@ package online.bookstore.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import online.bookstore.dto.user.UserLoginRequestDto;
+import online.bookstore.dto.user.UserLoginResponseDto;
 import online.bookstore.dto.user.UserRegistrationRequestDto;
 import online.bookstore.dto.user.UserResponseDto;
+import online.bookstore.security.AuthenticationService;
 import online.bookstore.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,10 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthenticationController {
     private final UserService userService;
+    private final AuthenticationService authenticationService;
 
     @PostMapping("/registration")
     public UserResponseDto createBook(@Valid @RequestBody UserRegistrationRequestDto requestDto) {
         return userService.registration(requestDto);
+    }
+
+    @PostMapping("/login")
+    public UserLoginResponseDto login(@RequestBody UserLoginRequestDto requestDto) {
+        return authenticationService.authenticate(requestDto);
     }
 
 }
