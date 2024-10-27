@@ -1,4 +1,7 @@
 package online.bookstore.dto.user;
 
-public record UserLoginRequestDto(String email, String password) {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record UserLoginRequestDto(@Email @NotBlank String email, @NotBlank String password) {
 }
