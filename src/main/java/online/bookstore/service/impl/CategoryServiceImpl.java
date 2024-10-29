@@ -1,7 +1,6 @@
 package online.bookstore.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import online.bookstore.dto.category.CategoryDto;
 import online.bookstore.dto.category.CreateCategoryRequestDto;
@@ -9,6 +8,8 @@ import online.bookstore.mapper.CategoryMapper;
 import online.bookstore.model.Category;
 import online.bookstore.repository.category.CategoryRepository;
 import online.bookstore.service.CategoryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,10 +19,8 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
 
     @Override
-    public List<CategoryDto> findAll() {
-        return categoryRepository.findAll().stream()
-                .map(categoryMapper::toDto)
-                .toList();
+    public Page<CategoryDto> getAll(Pageable pageable) {
+        return categoryRepository.findAll(pageable).map(categoryMapper::toDto);
     }
 
     @Override
@@ -33,8 +32,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto save(CreateCategoryRequestDto categoryDto) {
-        return categoryMapper.toDto(categoryRepository
-                .save(categoryMapper.toEntity(categoryDto)));
+        Category category = categoryMapper.toEntity(categoryDto);
+        return categoryMapper.toDto(categoryRepository.save(category));
     }
 
     @Override
@@ -43,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
                 () -> new online.bookstore.exception
                         .EntityNotFoundException("Can't find category by id " + id));
         categoryMapper.updateCategoryFromDto(categoryDto, category);
-        category = categoryRepository.save(category);
+        categoryRepository.save(category);
         return categoryMapper.toDto(category);
     }
 
