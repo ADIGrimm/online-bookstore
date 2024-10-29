@@ -1,5 +1,7 @@
 package online.bookstore.controller;
 
+import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import online.bookstore.dto.category.CategoryDto;
 import online.bookstore.dto.category.CreateCategoryRequestDto;
@@ -8,15 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
-@RequestMapping("/category")
+@RequestMapping("/categories")
 @RequiredArgsConstructor
 @RestController
 public class CategoryController {
@@ -24,7 +26,9 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public CategoryDto createCategory(CreateCategoryRequestDto categoryRequestDto) {
+    public CategoryDto createCategory(
+            @Valid @RequestBody CreateCategoryRequestDto categoryRequestDto
+    ) {
         return categoryService.save(categoryRequestDto);
     }
 
@@ -36,20 +40,22 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public CategoryDto getCategoryById(Long id) {
+    public CategoryDto getCategoryById(@PathVariable Long id) {
         return categoryService.getById(id);
     }
 
     @PutMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public CategoryDto updateCategory(Long id, CreateCategoryRequestDto categoryDto) {
+    public CategoryDto updateCategory(
+            @PathVariable Long id, @Valid @RequestBody CreateCategoryRequestDto categoryDto
+    ) {
         return categoryService.update(id, categoryDto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public void deleteCategory(Long id) {
+    public void deleteCategory(@PathVariable Long id) {
         categoryService.deleteById(id);
     }
 }

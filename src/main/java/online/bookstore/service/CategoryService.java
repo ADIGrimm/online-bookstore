@@ -1,9 +1,8 @@
 package online.bookstore.service;
 
+import java.util.List;
 import online.bookstore.dto.category.CategoryDto;
 import online.bookstore.dto.category.CreateCategoryRequestDto;
-
-import java.util.List;
 
 public interface CategoryService {
     List<CategoryDto> findAll();

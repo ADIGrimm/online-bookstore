@@ -1,10 +1,8 @@
 package online.bookstore.mapper;
 
 import online.bookstore.config.MapperConfig;
-import online.bookstore.dto.book.CreateBookRequestDto;
 import online.bookstore.dto.category.CategoryDto;
 import online.bookstore.dto.category.CreateCategoryRequestDto;
-import online.bookstore.model.Book;
 import online.bookstore.model.Category;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -13,7 +11,8 @@ import org.mapstruct.MappingTarget;
 public interface CategoryMapper {
     CategoryDto toDto(Category category);
 
-    Category toEntity(CreateCategoryRequestDto categoryDTO);
+    Category toEntity(CreateCategoryRequestDto categoryDto);
 
-    void updateCategoryFromDto(CreateCategoryRequestDto categoryRequestDto, @MappingTarget Category category);
+    void updateCategoryFromDto(CreateCategoryRequestDto categoryRequestDto,
+                               @MappingTarget Category category);
 }
