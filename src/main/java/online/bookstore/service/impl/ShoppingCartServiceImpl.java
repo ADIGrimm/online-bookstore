@@ -81,7 +81,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    @Transactional
     public void createShoppingCart(User user) {
         ShoppingCart cart = new ShoppingCart();
         cart.setUser(user);
