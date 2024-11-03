@@ -3,6 +3,7 @@ package online.bookstore.service;
 import online.bookstore.dto.cart.AddCartItemDto;
 import online.bookstore.dto.cart.ShoppingCartDto;
 import online.bookstore.dto.cart.UpdateCartItemQuantityDto;
+import online.bookstore.model.User;
 
 public interface ShoppingCartService {
     ShoppingCartDto addBook(Long id, AddCartItemDto addCartItemDto);
@@ -15,5 +16,7 @@ public interface ShoppingCartService {
             UpdateCartItemQuantityDto updateQuantityDto
     );
 
-    ShoppingCartDto deleteBook(Long cartItemId, Long userId);
+    void deleteBook(Long cartItemId, Long userId);
+
+    void createShoppingCart(User user);
 }

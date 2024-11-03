@@ -33,8 +33,7 @@ public class ShoppingCartController {
             @Valid @RequestBody AddCartItemDto addCartItemDto,
             Authentication authentication
     ) {
-        User user = (User) authentication.getPrincipal();
-        return shoppingCartService.addBook(user.getId(), addCartItemDto);
+        return shoppingCartService.addBook(getUserId(authentication), addCartItemDto);
     }
 
     @Operation(summary = "Get info about cart",
@@ -42,8 +41,7 @@ public class ShoppingCartController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_USER')")
     public ShoppingCartDto getInfo(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return shoppingCartService.getInfo(user.getId());
+        return shoppingCartService.getInfo(getUserId(authentication));
     }
 
     @Operation(summary = "Update quantity of some book",
@@ -55,19 +53,23 @@ public class ShoppingCartController {
             @Valid @RequestBody UpdateCartItemQuantityDto updateQuantityDto,
             Authentication authentication
     ) {
-        User user = (User) authentication.getPrincipal();
-        return shoppingCartService.updateQuantity(cartItemId, user.getId(), updateQuantityDto);
+        return shoppingCartService
+                .updateQuantity(cartItemId, getUserId(authentication), updateQuantityDto);
     }
 
     @Operation(summary = "Delete book from cart",
             description = "Delete book from cart and return cart info")
     @DeleteMapping("/items/{cartItemId}")
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public ShoppingCartDto deleteBook(
+    public void deleteBook(
             @PathVariable Long cartItemId,
             Authentication authentication
     ) {
+        shoppingCartService.deleteBook(cartItemId, getUserId(authentication));
+    }
+
+    private Long getUserId(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        return shoppingCartService.deleteBook(cartItemId, user.getId());
+        return user.getId();
     }
 }
