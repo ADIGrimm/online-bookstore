@@ -9,6 +9,7 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -27,7 +28,7 @@ databaseChangeLog:
         - addForeignKeyConstraint:
             baseTableName: carts
             baseColumnNames: user_id
-            constraintName: fk_carts_user_id
+            constraintName: fk_cart_user_id
             referencedTableName: users
             referencedColumnNames: id
             onDelete: CASCADE
