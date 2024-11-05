@@ -11,6 +11,7 @@ import online.bookstore.model.Role;
 import online.bookstore.model.User;
 import online.bookstore.repository.role.RoleRepository;
 import online.bookstore.repository.user.UserRepository;
+import online.bookstore.service.ShoppingCartService;
 import online.bookstore.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final ShoppingCartService shoppingCartService;
 
     @Override
     @Transactional
@@ -36,6 +38,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         user.setRoles(Set.of(roleRepository.findByName(Role.RoleName.ROLE_USER)
                 .orElseThrow(() -> new EntityNotFoundException("Can't find role"))));
-        return userMapper.toDto(userRepository.save(user));
+        userRepository.save(user);
+        shoppingCartService.createShoppingCart(user);
+        return userMapper.toDto(user);
     }
 }
