@@ -46,8 +46,8 @@ public class Order {
     private Set<OrderItem> orderItems = new HashSet<>();
 
     public enum Status {
-        Pending,
-        Delivered,
-        Canceled
+        PENDING,
+        DELIVERED,
+        CANCELLED
     }
 }
