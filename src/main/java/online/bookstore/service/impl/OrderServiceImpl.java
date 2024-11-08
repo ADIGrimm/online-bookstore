@@ -10,6 +10,7 @@ import online.bookstore.dto.order.CreateOrderRequestDto;
 import online.bookstore.dto.order.OrderDto;
 import online.bookstore.dto.order.OrderItemDto;
 import online.bookstore.dto.order.UpdateOrderStatusDto;
+import online.bookstore.exception.OrderProcessingException;
 import online.bookstore.mapper.OrderItemMapper;
 import online.bookstore.mapper.OrderMapper;
 import online.bookstore.model.CartItem;
@@ -49,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(Order.Status.PENDING);
         Set<CartItem> cartItems = shoppingCartRepository.findById(userId).get().getCartItems();
         if (cartItems.isEmpty()) {
-            throw new RuntimeException("Shopping cart is empty: " + cartItems);
+            throw new OrderProcessingException("Shopping cart is empty for user " + userId);
         }
         Set<OrderItem> orderItems = cartItems.stream()
                 .map(orderItemMapper::fromCartToOrderItem)
