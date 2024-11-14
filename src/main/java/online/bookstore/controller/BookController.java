@@ -8,8 +8,10 @@ import online.bookstore.dto.book.BookDto;
 import online.bookstore.dto.book.BookSearchParameters;
 import online.bookstore.dto.book.CreateBookRequestDto;
 import online.bookstore.service.BookService;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,7 +34,7 @@ public class BookController {
             description = "Return list of books as page")
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_USER')")
-    public Page<BookDto> getAll(Pageable pageable) {
+    public Page<BookDto> getAll(@ParameterObject @PageableDefault Pageable pageable) {
         return bookService.getAll(pageable);
     }
 

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import online.bookstore.dto.cart.AddCartItemDto;
 import online.bookstore.dto.cart.ShoppingCartDto;
 import online.bookstore.dto.cart.UpdateCartItemQuantityDto;
-import online.bookstore.model.User;
 import online.bookstore.service.ShoppingCartService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/cart")
 @RequiredArgsConstructor
 @RestController
-public class ShoppingCartController {
+public class ShoppingCartController implements UserContextHelper {
     private final ShoppingCartService shoppingCartService;
 
     @Operation(summary = "Add book to cart",
@@ -66,10 +65,5 @@ public class ShoppingCartController {
             Authentication authentication
     ) {
         shoppingCartService.deleteBook(cartItemId, getUserId(authentication));
-    }
-
-    private Long getUserId(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return user.getId();
     }
 }
