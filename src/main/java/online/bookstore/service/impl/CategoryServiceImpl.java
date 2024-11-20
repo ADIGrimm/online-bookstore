@@ -1,9 +1,9 @@
 package online.bookstore.service.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import online.bookstore.dto.category.CategoryDto;
 import online.bookstore.dto.category.CreateCategoryRequestDto;
+import online.bookstore.exception.EntityNotFoundException;
 import online.bookstore.mapper.CategoryMapper;
 import online.bookstore.model.Category;
 import online.bookstore.repository.category.CategoryRepository;
