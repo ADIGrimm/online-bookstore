@@ -13,17 +13,21 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.sql.DataSource;
 import lombok.SneakyThrows;
 import online.bookstore.dto.book.BookDto;
 import online.bookstore.dto.book.CreateBookRequestDto;
+import online.bookstore.model.Book;
 import online.bookstore.model.Category;
+import online.bookstore.repository.book.BookRepository;
 import online.bookstore.security.JwtAuthenticationFilter;
 import online.bookstore.security.JwtUtil;
 import online.bookstore.service.impl.BookServiceImpl;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -42,7 +46,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -50,6 +53,8 @@ class BookControllerTest {
     protected static MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private BookRepository bookRepository;
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     @MockBean
@@ -97,6 +102,84 @@ class BookControllerTest {
     @Test
     @WithMockUser(username = "user", roles = {"USER"})
     void getAllBooks_ShouldReturnPaginatedBooks_IgnoringCategories() throws Exception {
+        List<BookDto> expectedBooks = createThreeBookDtoList();
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<BookDto> bookPage = new PageImpl<>(expectedBooks, pageable, expectedBooks.size());
+        when(bookService.getAll(pageable)).thenReturn(bookPage);
+
+        MvcResult result = mockMvc.perform(get("/books")
+                        .param("page", "0")
+                        .param("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        List<BookDto> actualBooks = objectMapper.readValue(
+                objectMapper.readTree(jsonResponse).get("content").toString(),
+                new TypeReference<List<BookDto>>() {}
+        );
+        Assertions.assertEquals(expectedBooks.size(), actualBooks.size());
+        for (int i = 0; i < expectedBooks.size(); i++) {
+            BookDto expectedBook = expectedBooks.get(i);
+            BookDto actualBook = actualBooks.get(i);
+            EqualsBuilder.reflectionEquals(expectedBook, actualBook, "categories");
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "user", roles = {"USER"})
+    void getById_WithValidId_ShouldReturnBookDto() throws Exception {
+        Long bookId = 1L;
+        BookDto expected = createThreeBookDtoList().getFirst();
+        when(bookService.getById(bookId)).thenReturn(expected);
+        MvcResult result = mockMvc.perform(get("/books/{id}", bookId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        String jsonResponse = result.getResponse().getContentAsString();
+        BookDto actual = objectMapper.readValue(jsonResponse, BookDto.class);
+        EqualsBuilder.reflectionEquals(expected, actual, "categories");
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Sql(
+            scripts = "classpath:database/books/create-horror-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = "classpath:database/books/delete-bind.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @Sql(
+            scripts = "classpath:database/books/delete-new-book.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @Sql(
+            scripts = "classpath:database/books/delete-horror-category.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    void createBook() throws Exception {
+        CreateBookRequestDto requestBook = createBookRequestDtoWithCategory();
+        String jsonRequest = objectMapper.writeValueAsString(requestBook);
+        MvcResult result = mockMvc.perform(post("/books")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn();
+        BookDto actual = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                BookDto.class
+        );
+        Assertions.assertNotNull(actual.getId());
+        Optional<Book> savedBook = bookRepository.findById(actual.getId());
+        Assertions.assertTrue(savedBook.isPresent());
+        Assertions.assertEquals(requestBook.getTitle(), savedBook.get().getTitle());
+        Assertions.assertEquals(requestBook.getAuthor(), savedBook.get().getAuthor());
+    }
+
+    private List<BookDto> createThreeBookDtoList() {
         List<BookDto> books = new ArrayList<>();
         books.add(new BookDto()
                 .setId(1L)
@@ -125,63 +208,10 @@ class BookControllerTest {
                 .setDescription("Description for book three")
                 .setCoverImage("http://example.com/book3.jpg")
                 .setCategories(Set.of()));
-        Pageable pageable = PageRequest.of(0, 3);
-        Page<BookDto> bookPage = new PageImpl<>(books, pageable, books.size());
-        when(bookService.getAll(pageable)).thenReturn(bookPage);
-        MvcResult result = mockMvc.perform(get("/books")
-                        .param("page", "0")
-                        .param("size", "3")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-        String jsonResponse = result.getResponse().getContentAsString();
-        List<BookDto> actualBooks = objectMapper.readValue(
-                objectMapper.readTree(jsonResponse).get("content").toString(),
-                new TypeReference<List<BookDto>>() {}
-        );
-
-        for (int i = 0; i < books.size(); i++) {
-            BookDto expectedBook = books.get(i);
-            BookDto actualBook = actualBooks.get(i);
-            EqualsBuilder.reflectionEquals(expectedBook, actualBook, "categories");
-        }
+        return books;
     }
 
-    @Test
-    @WithMockUser(username = "user", roles = {"USER"})
-    void getById_WithValidId_ShouldReturnBookDto() throws Exception {
-        Long bookId = 1L;
-        BookDto expected = new BookDto()
-                .setId(bookId)
-                .setTitle("Book One")
-                .setAuthor("Author One")
-                .setPrice(BigDecimal.valueOf(19.99))
-                .setIsbn("978-3-16-148410-0")
-                .setDescription("Description for book one")
-                .setCoverImage("http://example.com/book1.jpg")
-                .setCategories(Set.of());
-        when(bookService.getById(bookId)).thenReturn(expected);
-        MvcResult result = mockMvc.perform(get("/books/{id}", bookId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-        String jsonResponse = result.getResponse().getContentAsString();
-        BookDto actual = objectMapper.readValue(jsonResponse, BookDto.class);
-        EqualsBuilder.reflectionEquals(expected, actual, "categories");
-    }
-
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    @Sql(
-            scripts = "classpath:database/books/delete-new-book.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
-    )
-    @Sql(
-            scripts = "classpath:database/books/delete-fiction-category.sql",
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
-    )
-    @Transactional
-    void createBook() throws Exception {
+    private CreateBookRequestDto createBookRequestDtoWithCategory() {
         CreateBookRequestDto requestBook = new CreateBookRequestDto();
         requestBook.setTitle("New Book");
         requestBook.setAuthor("Author");
@@ -191,31 +221,9 @@ class BookControllerTest {
         requestBook.setCoverImage("http://example.com/cover3.jpg");
         Category category = new Category();
         category.setId(1L);
-        category.setName("Fiction");
-        category.setDescription("Fictional books");
+        category.setName("Horror");
+        category.setDescription("Book contain horror moments");
         requestBook.setCategories(Set.of(category));
-
-        BookDto expected = new BookDto();
-        expected.setTitle(requestBook.getTitle());
-        expected.setAuthor(requestBook.getAuthor());
-        expected.setPrice(requestBook.getPrice());
-        expected.setIsbn(requestBook.getIsbn());
-        expected.setDescription(requestBook.getDescription());
-        expected.setCoverImage(requestBook.getCoverImage());
-        expected.setCategories(requestBook.getCategories());
-
-        String jsonRequest = objectMapper.writeValueAsString(requestBook);
-
-        MvcResult result = mockMvc.perform(post("/books")
-                        .content(jsonRequest)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        BookDto actual = objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                BookDto.class
-        );
-        EqualsBuilder.reflectionEquals(expected, actual, "id");
+        return requestBook;
     }
 }

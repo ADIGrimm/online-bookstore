@@ -18,7 +18,7 @@ import online.bookstore.dto.category.CategoryDto;
 import online.bookstore.dto.category.CreateCategoryRequestDto;
 import online.bookstore.security.JwtAuthenticationFilter;
 import online.bookstore.security.JwtUtil;
-import online.bookstore.service.CategoryService;
+import online.bookstore.service.impl.CategoryServiceImpl;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -52,7 +52,7 @@ class CategoryControllerTest {
     @MockBean
     private JwtUtil jwtUtil;
     @Mock
-    private CategoryService categoryService;
+    private CategoryServiceImpl categoryService;
 
     @BeforeAll
     static void beforeAll(
@@ -94,22 +94,15 @@ class CategoryControllerTest {
     @Test
     @WithMockUser(username = "user", roles = {"USER"})
     void getAllCategories_ShouldReturnPaginatedCategories() throws Exception {
-        List<CategoryDto> categories = new ArrayList<>();
-        categories.add(new CategoryDto()
-                .setId(1L)
-                .setName("Fiction")
-                .setDescription("Fictional books"));
-        categories.add(new CategoryDto()
-                .setId(2L)
-                .setName("Science")
-                .setDescription("Scientific books"));
-        categories.add(new CategoryDto()
-                .setId(3L)
-                .setName("History")
-                .setDescription("Historical books"));
+        List<CategoryDto> expectedCategories = createListOfCategoryDto();
         Pageable pageable = PageRequest.of(0, 3);
-        Page<CategoryDto> categoryPage = new PageImpl<>(categories, pageable, categories.size());
+        Page<CategoryDto> categoryPage = new PageImpl<>(
+                expectedCategories,
+                pageable,
+                expectedCategories.size()
+        );
         when(categoryService.getAll(pageable)).thenReturn(categoryPage);
+
         MvcResult result = mockMvc.perform(get("/categories")
                         .param("page", "0")
                         .param("size", "3")
@@ -122,10 +115,11 @@ class CategoryControllerTest {
                 new TypeReference<List<CategoryDto>>() {}
         );
 
-        for (int i = 0; i < categories.size(); i++) {
-            CategoryDto expected = categories.get(i);
-            CategoryDto actual = actualCategories.get(i);
-            EqualsBuilder.reflectionEquals(expected, actual);
+        Assertions.assertEquals(expectedCategories.size(), actualCategories.size());
+        for (int i = 0; i < expectedCategories.size(); i++) {
+            CategoryDto expectedCategory = expectedCategories.get(i);
+            CategoryDto actualCategory = actualCategories.get(i);
+            EqualsBuilder.reflectionEquals(expectedCategory, actualCategory);
         }
     }
 
@@ -133,10 +127,7 @@ class CategoryControllerTest {
     @WithMockUser(username = "user", roles = {"USER"})
     void getById_WithValidId_ShouldReturnCategoryDto() throws Exception {
         Long categoryId = 1L;
-        CategoryDto expected = new CategoryDto()
-                .setId(categoryId)
-                        .setName("Fiction")
-                                .setDescription("Fictional books");
+        CategoryDto expected = createListOfCategoryDto().getFirst();
         when(categoryService.getById(categoryId)).thenReturn(expected);
         MvcResult result = mockMvc.perform(get("/categories/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -151,12 +142,10 @@ class CategoryControllerTest {
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     @Sql(
             scripts = "classpath:database/categories/delete-new-category.sql",
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
     )
     void createCategory() throws Exception {
-        CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto();
-        requestDto.setName("Detective");
-        requestDto.setDescription("There is a mystery that will be solved");
+        CreateCategoryRequestDto requestDto = createCategoryRequestDto();
 
         CategoryDto expected = new CategoryDto();
         expected.setName(requestDto.getName());
@@ -179,5 +168,29 @@ class CategoryControllerTest {
         Assertions.assertNotNull(actual.getId());
         Assertions.assertEquals(expected.getName(), actual.getName());
         Assertions.assertEquals(expected.getDescription(), actual.getDescription());
+    }
+
+    private List<CategoryDto> createListOfCategoryDto() {
+        List<CategoryDto> categories = new ArrayList<>();
+        categories.add(new CategoryDto()
+                .setId(1L)
+                .setName("Fiction")
+                .setDescription("Fictional books"));
+        categories.add(new CategoryDto()
+                .setId(2L)
+                .setName("Science")
+                .setDescription("Scientific books"));
+        categories.add(new CategoryDto()
+                .setId(3L)
+                .setName("History")
+                .setDescription("Historical books"));
+        return categories;
+    }
+
+    private CreateCategoryRequestDto createCategoryRequestDto() {
+        CreateCategoryRequestDto requestDto = new CreateCategoryRequestDto();
+        requestDto.setName("Detective");
+        requestDto.setDescription("There is a mystery that will be solved");
+        return requestDto;
     }
 }
